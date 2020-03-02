@@ -82,7 +82,7 @@ on_session_creation = [
 
 permission_query_conditions = {
 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-	"ToDo": "frappe.desk.doctype.todo.todo.get_permission_query_conditions",
+	# "ToDo": "frappe.desk.doctype.todo.todo.get_permission_query_conditions",
 	"User": "frappe.core.doctype.user.user.get_permission_query_conditions",
 	"Note": "frappe.desk.doctype.note.note.get_permission_query_conditions",
 	"Kanban Board": "frappe.desk.doctype.kanban_board.kanban_board.get_permission_query_conditions",

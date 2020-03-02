@@ -98,7 +98,7 @@ def get_permission_query_conditions(user):
 			.format(user=frappe.db.escape(user))
 
 def has_permission(doc, user):
-	if "Ann" in frappe.get_roles(user):
+	if "System Manager" in frappe.get_roles(user):
 		return True
 	else:
 		return doc.owner==user or doc.assigned_by==user
