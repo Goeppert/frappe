@@ -297,18 +297,19 @@ def get_open_count(doctype, name, items=[]):
 			fieldnames = links.get('internal_non_standard_fieldnames', {}).get(d).split(',')
 			for fieldname in fieldnames:
 				data = {'name': d}
-				if filters:
-					if doc.get(fieldname):
-						filters["name"] = doc.get(fieldname)
-						total = len(frappe.get_all(d, fields='name',
-						 	filters=filters, limit=100, distinct=True, ignore_ifnull=True))	
-						data['open_count'] = total
+				if doc.get(fieldname):
+					if filters:
+						if doc.get(fieldname):
+							filters["name"] = doc.get(fieldname)
+							total = len(frappe.get_all(d, fields='name',
+								filters=filters, limit=100, distinct=True, ignore_ifnull=True))	
+							data['open_count'] = total
 
-				total = len(frappe.get_all(d, fields='name',
-				 	filters={"name": doc.get(fieldname)}, limit=100, distinct=True, ignore_ifnull=True))
-				data['count'] = total
+					total = len(frappe.get_all(d, fields='name',
+						filters={"name": doc.get(fieldname)}, limit=100, distinct=True, ignore_ifnull=True))
+					data['count'] = total
 
-				out.append(data)
+					out.append(data)
 	out = {
 		'count': out,
 	}
