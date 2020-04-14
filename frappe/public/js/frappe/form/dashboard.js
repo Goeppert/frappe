@@ -195,6 +195,7 @@ frappe.ui.form.Dashboard = Class.extend({
 		this.data = this.frm.meta.__dashboard || {};
 		if(!this.data.transactions) this.data.transactions = [];
 		if(!this.data.internal_links) this.data.internal_links = {};
+		if(!this.data.internal_ref_type_links) this.data.internal_ref_type_links = {};
 		this.filter_permissions();
 	},
 
@@ -294,7 +295,13 @@ frappe.ui.form.Dashboard = Class.extend({
 			} else {
 				return false;
 			}
-		} else if(this.data.fieldname) {
+		} else if(this.data.internal_ref_type_links[doctype]) {
+			if(names.length) {
+				frappe.route_options = {'name': ['in', names]};
+			} else {
+				return false;
+			}
+		}else if(this.data.fieldname) {
 			frappe.route_options = this.get_document_filter(doctype);
 			if(show_open) {
 				frappe.ui.notifications.show_open_count_list(doctype);
@@ -364,6 +371,18 @@ frappe.ui.form.Dashboard = Class.extend({
 					me.frm.dashboard.set_badge_count(doctype, 0, names.length, names);
 				});
 
+				$.each(me.data.internal_ref_type_links, function(doctype, link) {
+					var table_fieldname = link[0], link_fieldname = link[1];
+					var names = [];
+					(me.frm.doc[table_fieldname] || []).forEach(function(d) {
+						var value = d[link_fieldname];
+						if(d["ref_type"] == doctype && value && names.indexOf(value)===-1) {
+							names.push(value);
+						}
+					});
+					me.frm.dashboard.set_badge_count(doctype, 0, names.length, names);
+				});
+
 				me.frm.dashboard_data = r.message;
 				me.frm.trigger('dashboard_update');
 			}
@@ -387,6 +406,13 @@ frappe.ui.form.Dashboard = Class.extend({
 		}
 
 		if(this.data.internal_links[doctype]) {
+			if(names && names.length) {
+				$link.attr('data-names', names ? names.join(',') : '');
+			} else {
+				$link.find('a').attr('disabled', true);
+			}
+		}
+		if(this.data.internal_ref_type_links[doctype]) {
 			if(names && names.length) {
 				$link.attr('data-names', names ? names.join(',') : '');
 			} else {
