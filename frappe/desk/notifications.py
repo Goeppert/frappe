@@ -256,6 +256,8 @@ def get_open_count(doctype, name, items=[]):
 
 	frappe.has_permission(doc=frappe.get_doc(doctype, name), throw=True)
 
+	doc=frappe.get_doc(doctype, name)
+
 	meta = frappe.get_meta(doctype)
 	links = meta.get_dashboard_data()
 
@@ -274,22 +276,39 @@ def get_open_count(doctype, name, items=[]):
 			continue
 
 		filters = get_filters_for(d)
-		fieldnames = links.get('non_standard_fieldnames', {}).get(d, links.fieldname).split(',')
-		for fieldname in fieldnames:
-			data = {'name': d}
-			if filters:
-				# get the fieldname for the current document
-				# we only need open documents related to the current document
-				filters[fieldname] = name
+		if links.get('non_standard_fieldnames'):
+			fieldnames = links.get('non_standard_fieldnames', {}).get(d, links.fieldname).split(',')
+			for fieldname in fieldnames:
+				data = {'name': d}
+				if filters:
+					# get the fieldname for the current document
+					# we only need open documents related to the current document
+					filters[fieldname] = name
+					total = len(frappe.get_all(d, fields='name',
+						filters=filters, limit=100, distinct=True, ignore_ifnull=True))
+					data['open_count'] = total
+
 				total = len(frappe.get_all(d, fields='name',
-					filters=filters, limit=100, distinct=True, ignore_ifnull=True))
-				data['open_count'] = total
+					filters={fieldname: name}, limit=100, distinct=True, ignore_ifnull=True))
+				data['count'] = total
+				out.append(data)
+		
+		if links.get('internal_non_standard_fieldnames'):
+			fieldnames = links.get('internal_non_standard_fieldnames', {}).get(d).split(',')
+			for fieldname in fieldnames:
+				data = {'name': d}
+				if filters:
+					if doc.get(fieldname):
+						filters["name"] = doc.get(fieldname)
+						total = len(frappe.get_all(d, fields='name',
+						 	filters=filters, limit=100, distinct=True, ignore_ifnull=True))	
+						data['open_count'] = total
 
-			total = len(frappe.get_all(d, fields='name',
-				filters={fieldname: name}, limit=100, distinct=True, ignore_ifnull=True))
-			data['count'] = total
-			out.append(data)
+				total = len(frappe.get_all(d, fields='name',
+				 	filters={"name": doc.get(fieldname)}, limit=100, distinct=True, ignore_ifnull=True))
+				data['count'] = total
 
+				out.append(data)
 	out = {
 		'count': out,
 	}
